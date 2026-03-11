@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="synthwave">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quasar - Modern Statistical Learning Workbench</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.1/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-base-300 min-h-screen text-base-content">
+    <div class="drawer lg:drawer-open">
+        <input id="my-drawer-2" type="checkbox" class="drawer-toggle" />
+        <div class="drawer-content flex flex-col p-6">
+            <!-- Page content here -->
+            <label for="my-drawer-2" class="btn btn-primary drawer-button lg:hidden mb-4">Open Drawer</label>
+
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-4xl font-bold text-primary tracking-wider" style="text-shadow: 0 0 10px var(--p);">QUASAR <span class="text-lg text-secondary">Statistical Learning Workbench</span></h1>
+
+                <div class="stats shadow glass-card">
+                  <div class="stat">
+                    <div class="stat-title">Accuracy</div>
+                    <div class="stat-value text-success text-2xl" id="stat-accuracy">--%</div>
+                  </div>
+                  <div class="stat">
+                    <div class="stat-title">Precision</div>
+                    <div class="stat-value text-info text-2xl" id="stat-precision">--%</div>
+                  </div>
+                  <div class="stat">
+                    <div class="stat-title">Recall</div>
+                    <div class="stat-value text-warning text-2xl" id="stat-recall">--%</div>
+                  </div>
+                </div>
+            </div>
+
+            <!-- SVM Section -->
+            <div id="svm-section" class="mb-12">
+                <h2 class="text-2xl font-semibold mb-4 text-accent">Support Vector Machines</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="card bg-base-100 shadow-xl glass-card col-span-1 p-6">
+                        <h3 class="text-xl mb-4">Configuration</h3>
+                        <div class="form-control w-full max-w-xs mb-4">
+                          <label class="label"><span class="label-text">Kernel</span></label>
+                          <select id="svm-kernel" class="select select-bordered select-primary">
+                            <option value="linear" selected>Linear</option>
+                            <option value="rbf">RBF</option>
+                            <option value="poly">Polynomial</option>
+                          </select>
+                        </div>
+                        <div class="form-control w-full max-w-xs mb-4">
+                          <label class="label"><span class="label-text">Penalty (C)</span></label>
+                          <input type="range" id="svm-c" min="0.1" max="10" value="1.0" step="0.1" class="range range-primary" />
+                          <div class="w-full flex justify-between text-xs px-2 mt-1">
+                            <span>0.1</span>
+                            <span id="svm-c-val">1.0</span>
+                            <span>10</span>
+                          </div>
+                        </div>
+                        <div class="form-control w-full max-w-xs mb-4">
+                            <label class="label cursor-pointer">
+                                <span class="label-text">Enable Cross-Validation</span>
+                                <input type="checkbox" id="svm-cv" class="toggle toggle-primary" />
+                            </label>
+                        </div>
+                        <button id="train-svm-btn" class="btn btn-primary w-full mt-4">Train SVM</button>
+                    </div>
+                    <div class="card bg-base-100 shadow-xl glass-card col-span-2 p-4 h-96 relative flex items-center justify-center">
+                        <div id="svm-plot" class="w-full h-full"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KMeans Section -->
+            <div id="kmeans-section" class="mb-12">
+                <h2 class="text-2xl font-semibold mb-4 text-accent">K-means Clustering</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="card bg-base-100 shadow-xl glass-card col-span-1 p-6">
+                        <h3 class="text-xl mb-4">Configuration</h3>
+                        <div class="form-control w-full max-w-xs mb-4">
+                          <label class="label"><span class="label-text">Number of Clusters (k)</span></label>
+                          <input type="range" id="kmeans-k" min="2" max="10" value="3" step="1" class="range range-secondary" />
+                          <div class="w-full flex justify-between text-xs px-2 mt-1">
+                            <span>2</span>
+                            <span id="kmeans-k-val">3</span>
+                            <span>10</span>
+                          </div>
+                        </div>
+                        <button id="train-kmeans-btn" class="btn btn-secondary w-full mt-4">Run K-means</button>
+                    </div>
+                    <div class="card bg-base-100 shadow-xl glass-card col-span-2 p-4 h-96 relative flex items-center justify-center">
+                        <div id="kmeans-plot" class="w-full h-full"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANN Section -->
+            <div id="ann-section" class="mb-12">
+                <h2 class="text-2xl font-semibold mb-4 text-accent">Artificial Neural Networks (MLP)</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="card bg-base-100 shadow-xl glass-card col-span-1 p-6">
+                        <h3 class="text-xl mb-4">Configuration</h3>
+                        <div class="form-control w-full max-w-xs mb-4">
+                          <label class="label"><span class="label-text">Hidden Size</span></label>
+                          <input type="range" id="ann-hidden" min="2" max="50" value="10" step="1" class="range range-accent" />
+                          <div class="w-full flex justify-between text-xs px-2 mt-1">
+                            <span>2</span>
+                            <span id="ann-hidden-val">10</span>
+                            <span>50</span>
+                          </div>
+                        </div>
+                        <div class="form-control w-full max-w-xs mb-4">
+                          <label class="label"><span class="label-text">Epochs</span></label>
+                          <input type="range" id="ann-epochs" min="10" max="500" value="100" step="10" class="range range-accent" />
+                          <div class="w-full flex justify-between text-xs px-2 mt-1">
+                            <span>10</span>
+                            <span id="ann-epochs-val">100</span>
+                            <span>500</span>
+                          </div>
+                        </div>
+                        <button id="train-ann-btn" class="btn btn-accent w-full mt-4">Train Network</button>
+                    </div>
+                    <div class="card bg-base-100 shadow-xl glass-card col-span-2 p-4 h-96">
+                        <canvas id="ann-loss-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="drawer-side border-r border-base-100">
+            <label for="my-drawer-2" aria-label="close sidebar" class="drawer-overlay"></label>
+            <ul class="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
+            <!-- Sidebar content here -->
+            <li class="mb-4">
+                <h2 class="text-2xl font-bold text-primary mb-2">Modules</h2>
+            </li>
+            <li><a href="#svm-section" class="text-lg mb-2">SVM</a></li>
+            <li><a href="#kmeans-section" class="text-lg mb-2">K-means</a></li>
+            <li><a href="#ann-section" class="text-lg mb-2">Neural Networks</a></li>
+            </ul>
+        </div>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>
